@@ -217,7 +217,8 @@ class BoardTabWidget(QWidget):
 
     def get_esp_target_for_square(self):
         if self.current_selected_square_text and not self.current_selected_is_label:
-            self.serial_handler.send_command(f"getsquarepos {self.current_selected_square_text.lower()}")
+            #self.serial_handler.send_command(f"getsquarepos {self.current_selected_square_text.lower()}")
+            pass
 
     def parse_esp32_response(self, line):
         # This method will be connected to serial_handler.data_received signal

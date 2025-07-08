@@ -270,7 +270,8 @@ class CaptureTabWidget(QWidget):
         
     def get_esp_target_for_slot(self): # Same
         if self.current_selected_slot_number != -1:
-            self.serial_handler.send_command(f"getcaptpos {self.current_selected_slot_number}")
+            #self.serial_handler.send_command(f"getcaptpos {self.current_selected_slot_number}")
+            pass
             
     def go_to_configured_dropoff(self, move_capture_stepper=False): # Same
         cart_pos = self.config_values.get("CART_CAPTURE_POS", 2250)

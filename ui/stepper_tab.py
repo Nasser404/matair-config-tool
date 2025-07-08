@@ -212,7 +212,8 @@ class StepperTabWidget(QWidget):
 
     def request_all_positions(self):
         if self.serial_handler.is_connected():
-            self.serial_handler.send_command("getallpos")
+            #self.serial_handler.send_command("getallpos")
+            pass
 
     def parse_esp32_response(self, line):
         if line.startswith("POS:"): 

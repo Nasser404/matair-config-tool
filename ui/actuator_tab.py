@@ -97,7 +97,8 @@ class ActuatorTabWidget(QWidget):
 
     def request_all_statuses(self): # This will trigger getallpos
         if self.serial_handler.is_connected():
-            self.serial_handler.send_command("getallpos")
+            #self.serial_handler.send_command("getallpos")
+            pass
 
     def handle_connection_change_for_timer(self, connected, port_name):
         if connected:

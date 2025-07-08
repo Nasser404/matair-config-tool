@@ -492,17 +492,9 @@ void commandExtendActuator(bool timed) { /* ... same, use _CONFIG values ... */
 }
 void commandRetractActuator(bool timed, bool useSensor) { /* ... same, use _CONFIG values, Active HIGH sensor ... */
     Serial.println("CMD: Retract Actuator");
+      Serial.println("CMD: Extend Actuator");
     digitalWrite(ACTUATOR_IN1_PIN, HIGH); digitalWrite(ACTUATOR_IN2_PIN, LOW);
-    if (timed) {
-        unsigned long rStart = millis(); bool sTrig = false;
-        while(millis() - rStart < ACTUATOR_TRAVEL_TIME_MS) {
-            if (useSensor && digitalRead(ACTUATOR_RETRACTED_SENSE_PIN) == HIGH) { sTrig = true; break; }
-            delay(10);
-        }
-        commandStopActuator();
-        if(useSensor) Serial.println(sTrig ? "  Retract (sensor) complete." : "WARN: Timed retract, sensor NOT triggered.");
-        else Serial.println("  Retract (timed) complete.");
-    }
+    if (timed) { delay(ACTUATOR_TRAVEL_TIME_MS); commandEStopActuator(); Serial.println("  Extend (timed) complete."); }
 }
 void commandStopActuator() { /* ... same ... */
     digitalWrite(ACTUATOR_IN1_PIN, LOW); digitalWrite(ACTUATOR_IN2_PIN, LOW);

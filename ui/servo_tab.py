@@ -118,7 +118,8 @@ class ServoControlWidget(QGroupBox):
         if self.parent_tab_widget: # Check if parent_tab_widget is set
             self.parent_tab_widget.request_all_positions_from_tab()
         else: # Fallback if parent isn't directly accessible this way
-            self.serial_handler.send_command("getallpos")
+            #self.serial_handler.send_command("getallpos")
+            pass
 
 
     def update_current_angle_display(self, angle):
@@ -267,7 +268,8 @@ class ServoTabWidget(QWidget):
 
     def request_all_positions_from_tab(self): # Renamed to avoid conflict if main_app also has one
         if self.serial_handler.is_connected():
-            self.serial_handler.send_command("getallpos")
+            #self.serial_handler.send_command("getallpos")
+            pass
 
     def parse_esp32_response(self, line):
         if line.startswith("POS:"):
