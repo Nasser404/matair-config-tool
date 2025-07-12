@@ -41,11 +41,11 @@ Servo servoGripper;
 float STEPPER_SPEED = 4000;
 float STEPPER_ACCEL = 5000;
 
-int GRIPPER_OPEN_ANGLE = 160;
-int GRIPPER_CLOSE_ANGLE = 50;
+int GRIPPER_OPEN_ANGLE = 140;
+int GRIPPER_CLOSE_ANGLE = 45;
 
-int GRIPPER_ROT_BOARD = 180;
-int GRIPPER_ROT_CAPTURE = 62;
+int GRIPPER_ROT_BOARD = 172;
+int GRIPPER_ROT_CAPTURE = 63;
 
 long CART_CAPTURE_POS = 2250;
 long CART_SAFETY_THRESHOLD = 2250; // Cart position below which gripper must be at GRIPPER_ROT_BOARD
@@ -144,8 +144,8 @@ void setup() {
     digitalWrite(ACTUATOR_IN2_PIN, LOW);
     pinMode(ACTUATOR_RETRACTED_SENSE_PIN, INPUT); // Active HIGH based on discussion
 
-    servoRotation.attach(ROTATION_SERVO_PIN);
-    servoGripper.attach(GRIPPER_SERVO_PIN);
+    servoRotation.attach(ROTATION_SERVO_PIN, 500, 2500);
+    servoGripper.attach(GRIPPER_SERVO_PIN, 500, 2500);
     servoRotation.write(GRIPPER_ROT_BOARD); // Start safe
     servoGripper.write(GRIPPER_OPEN_ANGLE); // Start open
 
@@ -494,7 +494,7 @@ void commandRetractActuator(bool timed, bool useSensor) { /* ... same, use _CONF
     Serial.println("CMD: Retract Actuator");
       Serial.println("CMD: Extend Actuator");
     digitalWrite(ACTUATOR_IN1_PIN, HIGH); digitalWrite(ACTUATOR_IN2_PIN, LOW);
-    if (timed) { delay(ACTUATOR_TRAVEL_TIME_MS); commandEStopActuator(); Serial.println("  Extend (timed) complete."); }
+    if (timed) { delay(ACTUATOR_TRAVEL_TIME_MS); commandStopActuator(); Serial.println("  Extend (timed) complete."); }
 }
 void commandStopActuator() { /* ... same ... */
     digitalWrite(ACTUATOR_IN1_PIN, LOW); digitalWrite(ACTUATOR_IN2_PIN, LOW);
