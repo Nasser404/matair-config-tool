@@ -1,99 +1,167 @@
+# --- START OF FILE esp32_config_tool/ui/test_tab.py ---
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-                             QPushButton, QGroupBox, QMessageBox, QFormLayout, QRadioButton,
-                             QButtonGroup)
+                             QPushButton, QGroupBox, QMessageBox, QFormLayout, QGridLayout,
+                             QFrame, QSizePolicy, QScrollArea)
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
+
+# Import the visual components from other tabs
+from .board_tab import ChessSquareButton
+from .capture_tab import CircularCaptureWidget
 
 class TestTabWidget(QWidget):
     def __init__(self, config_values_ref, serial_handler_ref, parent=None):
         super().__init__(parent)
         self.serial_handler = serial_handler_ref
-        self.config_values = config_values_ref # Not directly used here, but good practice
+        self.config_values = config_values_ref
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        # --- State for move selection ---
+        self.selecting_from = True # Start by selecting the 'From' location
+        self.from_location_str = ""
+        self.to_location_str = ""
 
-        test_move_group = QGroupBox("Execute 'do <from> <to>' Sequence")
-        form_layout = QFormLayout(test_move_group) # QFormLayout is good for label-input pairs
-
-        # --- From Location ---
-        self.from_label = QLabel("From Location:")
-        self.from_input = QLineEdit()
-        self.from_input.setPlaceholderText("e.g., e2 or capt5")
-        form_layout.addRow(self.from_label, self.from_input)
-
-        # --- To Location ---
-        self.to_label = QLabel("To Location:")
-        self.to_input = QLineEdit()
-        self.to_input.setPlaceholderText("e.g., e4 or capt10")
-        form_layout.addRow(self.to_label, self.to_input)
+        # --- Main Layout ---
+        tab_overall_layout = QVBoxLayout(self)
+        tab_overall_layout.setContentsMargins(0, 0, 0, 0)
         
-        # --- Promotion (Simple version for now, if needed later) ---
-        # self.promotion_group = QGroupBox("Promotion (if applicable)")
-        # promotion_layout = QHBoxLayout(self.promotion_group)
-        # self.promote_to_label = QLabel("Promote to:")
-        # self.promote_queen_rb = QRadioButton("Queen")
-        # self.promote_rook_rb = QRadioButton("Rook")
-        # self.promote_bishop_rb = QRadioButton("Bishop")
-        # self.promote_knight_rb = QRadioButton("Knight")
-        # self.promote_queen_rb.setChecked(True) # Default to Queen
-        #
-        # self.promotion_button_group = QButtonGroup(self) # For exclusive selection
-        # self.promotion_button_group.addButton(self.promote_queen_rb)
-        # self.promotion_button_group.addButton(self.promote_rook_rb)
-        # # ... add others ...
-        #
-        # promotion_layout.addWidget(self.promote_to_label)
-        # promotion_layout.addWidget(self.promote_queen_rb)
-        # promotion_layout.addWidget(self.promote_rook_rb)
-        # # ... add others ...
-        # promotion_layout.addStretch()
-        # # self.promotion_group.setVisible(False) # Initially hidden or always visible
-        # form_layout.addRow(self.promotion_group)
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
+        # Create a container widget for the actual content
+        main_widget_for_scroll = QWidget()
+        main_layout = QHBoxLayout(main_widget_for_scroll) # This is your original main layout
+        
+        scroll_area.setWidget(main_widget_for_scroll)
+        tab_overall_layout.addWidget(scroll_area)
+        
+        # --- Left Side: Selection Grids ---
+        selection_area = QVBoxLayout()
+        selection_area.setAlignment(Qt.AlignTop)
 
+        # Board Grid for selection
+        board_group = QGroupBox("Select from Board")
+        board_grid_widget = QFrame()
+        board_grid_layout = QGridLayout(board_grid_widget)
+        board_grid_layout.setSpacing(1)
+        files = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        ranks = ['8', '7', '6', '5', '4', '3', '2', '1']
+        for r, rank_char in enumerate(ranks):
+            for f, file_char in enumerate(files):
+                square_name = file_char + rank_char
+                square_btn = ChessSquareButton(square_name, f, r)
+                square_btn.clicked.connect(self.on_location_selected)
+                board_grid_layout.addWidget(square_btn, r, f)
+        board_group.setLayout(board_grid_layout)
+        selection_area.addWidget(board_group)
+
+        # Capture Zone Grid for selection
+        capture_group = QGroupBox("Select from Capture Zone")
+        self.circular_capture_widget = CircularCaptureWidget()
+        self.circular_capture_widget.slot_clicked.connect(self.on_location_selected)
+        capture_layout = QVBoxLayout(capture_group)
+        capture_layout.addWidget(self.circular_capture_widget)
+        selection_area.addWidget(capture_group)
+        
+        main_layout.addLayout(selection_area, 2) # Give more space to grids
+
+        # --- Right Side: Control Box ---
+        control_box = QGroupBox("Move Execution")
+        control_layout = QVBoxLayout(control_box)
+        control_box.setFixedWidth(300)
+        control_box.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+
+        self.instruction_label = QLabel("1. Select 'From' location...")
+        self.instruction_label.setFont(QFont("Arial", 11, QFont.Bold))
+        self.instruction_label.setWordWrap(True)
+        control_layout.addWidget(self.instruction_label)
+
+        form_layout = QFormLayout()
+        self.from_display = QLineEdit()
+        self.from_display.setReadOnly(True)
+        self.from_display.setStyleSheet("background-color: #f0f0f0;")
+        form_layout.addRow("From:", self.from_display)
+
+        self.to_display = QLineEdit()
+        self.to_display.setReadOnly(True)
+        self.to_display.setStyleSheet("background-color: #f0f0f0;")
+        form_layout.addRow("To:", self.to_display)
+        control_layout.addLayout(form_layout)
 
         self.execute_button = QPushButton("Execute 'do' Move")
         self.execute_button.setFont(QFont("Arial", 11, QFont.Bold))
+        self.execute_button.setEnabled(False) # Disabled until both From and To are selected
         self.execute_button.clicked.connect(self.send_do_command)
-        form_layout.addRow(self.execute_button)
+        control_layout.addWidget(self.execute_button)
 
-        main_layout.addWidget(test_move_group)
-        main_layout.addStretch() # Push group to top
+        self.clear_button = QPushButton("Clear Selection")
+        self.clear_button.clicked.connect(self.clear_selection)
+        control_layout.addWidget(self.clear_button)
 
-        if self.serial_handler:
-            self.serial_handler.data_received.connect(self.parse_esp32_response)
+        control_layout.addStretch()
+        main_layout.addWidget(control_box, 1)
 
-    def send_do_command(self):
-        from_loc = self.from_input.text().strip().lower()
-        to_loc = self.to_input.text().strip().lower()
+    def on_location_selected(self):
+        location_str = ""
+        sender = self.sender()
 
-        if not from_loc or not to_loc:
-            QMessageBox.warning(self, "Input Error", "Both 'From' and 'To' locations must be specified.")
+        if isinstance(sender, ChessSquareButton):
+            location_str = sender.text().lower()
+        elif isinstance(sender, CircularCaptureWidget):
+            # The signal from CircularCaptureWidget is an int, but we need the text
+            # This requires a small change to its signal or how we handle it.
+            # Let's assume on_location_selected is now connected to the slot_clicked(int) signal
+            if isinstance(self.sender(), CircularCaptureWidget):
+                 # This slot will receive an integer
+                 slot_num = self.sender().selected_slot # Use the selected_slot attribute
+                 location_str = f"capt{slot_num}"
+                 # Update the visual selection in the widget
+                 self.circular_capture_widget.update_selected_slot_display(slot_num)
+
+        if not location_str:
             return
 
-        # Basic validation (can be more sophisticated)
-        # For now, just check they are not empty. ESP32 will do more validation.
-        
-        # TODO: If implementing promotion piece selection:
-        # promoted_piece = "QUEEN" # Default
-        # if self.promote_rook_rb.isChecked(): promoted_piece = "ROOK"
-        # ...
-        # command = f"do {from_loc} {to_loc} promote {promoted_piece}" # Example if ESP supports this
-        
-        command = f"do {from_loc} {to_loc}"
+        if self.selecting_from:
+            self.from_location_str = location_str
+            self.from_display.setText(self.from_location_str)
+            self.to_location_str = "" # Clear 'To' if re-selecting 'From'
+            self.to_display.setText("")
+            self.instruction_label.setText("2. Select 'To' location...")
+            self.selecting_from = False # Switch to selecting 'To'
+            self.execute_button.setEnabled(False)
+        else: # We are selecting 'To'
+            self.to_location_str = location_str
+            self.to_display.setText(self.to_location_str)
+            self.instruction_label.setText("Ready to execute move.")
+            self.selecting_from = True # Next click will be a new 'From'
+            self.execute_button.setEnabled(True)
+
+    def clear_selection(self):
+        self.from_location_str = ""
+        self.to_location_str = ""
+        self.from_display.setText("")
+        self.to_display.setText("")
+        self.selecting_from = True
+        self.instruction_label.setText("1. Select 'From' location...")
+        self.execute_button.setEnabled(False)
+        self.circular_capture_widget.update_selected_slot_display(-1) # Clear visual selection
+
+    def send_do_command(self):
+        if not self.from_location_str or not self.to_location_str:
+            QMessageBox.warning(self, "Input Error", "Both 'From' and 'To' locations must be selected.")
+            return
+
+        command = f"do {self.from_location_str} {self.to_location_str}"
         
         if self.serial_handler.is_connected():
-            QMessageBox.information(self, "Sending Command", f"Sending: {command}\n\nMonitor ESP32 serial output for progress and any errors from the robot itself.")
+            QMessageBox.information(self, "Sending Command", f"Sending: {command}\n\nMonitor ESP32 serial output for progress.")
             self.serial_handler.send_command(command)
+            # After sending, clear for the next move
+            self.clear_selection()
         else:
             QMessageBox.warning(self, "Serial Error", "Not connected to ESP32.")
 
-
     def parse_esp32_response(self, line):
-        # This tab might not need to parse much beyond general ACKs or ERRs,
-        # as the main feedback is the physical robot movement and ESP32 serial log.
-        if line.startswith("ACK: Executing Do Sequence"):
-            # Could update a status label on this tab if desired
-            print(f"TestTab: ESP32 acknowledged 'do' command.")
-        elif line.startswith("ERR:") and "do" in line.lower(): # Generic error related to do
+        # Could provide feedback here, e.g., "Do Sequence Complete" ACK
+        if "Do Sequence Complete" in line:
+            QMessageBox.information(self, "ESP32 Feedback", "The 'do' sequence has completed successfully.")
+        elif line.startswith("ERR:") and "do" in line.lower():
              QMessageBox.critical(self, "ESP32 'do' Error", line)
