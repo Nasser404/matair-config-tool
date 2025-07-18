@@ -18,7 +18,6 @@ Servo servoRotation;
 Servo servoGripper;
 
 // ========================== CONFIGURABLE VALUES =========================
-// These are the RUNTIME variables that can be updated via Serial command
 float STEPPER_SPEED = 4000;
 float STEPPER_ACCEL = 5000;
 int GRIPPER_OPEN_ANGLE = 160;
@@ -141,7 +140,7 @@ void processCommand(String cmd) {
     else if (command_key.equals("do")) { int secondSpace = args.indexOf(' '); if(secondSpace != -1) { executeDoSequence(args.substring(0, secondSpace), args.substring(secondSpace+1)); } }
     else if (command_key.equals("getsquarepos")) { sendSquareTargetData(args); }
     else if (command_key.equals("getcaptpos")) { sendCaptureSlotTargetData(args.toInt()); }
-    else if (command_key.equals("setconfig")) { // <<< NEW COMMAND
+    else if (command_key.equals("setconfig")) {
         int secondSpace = args.indexOf(' ');
         if (secondSpace != -1) {
             String key = args.substring(0, secondSpace);
@@ -157,8 +156,8 @@ void processCommand(String cmd) {
 // ========================== CONFIG SETTER ===============================
 void setConfigValue(String key, String value) {
     key.toLowerCase();
-    float f_val = value.toFloat(); // Use float for generic number parsing
-    long l_val = value.toInt();    // Use toInt() for long values if needed
+    float f_val = value.toFloat(); 
+    long l_val = value.toInt();   
 
     if (key.equals("stepper_speed")) { STEPPER_SPEED = f_val; stepperCart.setMaxSpeed(f_val); stepperOrb.setMaxSpeed(f_val); stepperCapture.setMaxSpeed(f_val); }
     else if (key.equals("stepper_accel")) { STEPPER_ACCEL = f_val; stepperCart.setAcceleration(f_val); stepperOrb.setAcceleration(f_val); stepperCapture.setAcceleration(f_val); }
@@ -274,42 +273,36 @@ void stepperMove(AccelStepper& stepper, long pos, bool isCart) {
 }
 
 
-void enforceAllSafetyForCart(long targetCartPos) {
-    // Serial.println("DEBUG: enforceAllSafetyForCart called for target: " + String(targetCartPos)); // Optional Debug
-    enforceCaptureHomedForLowCart(targetCartPos); // Check this first (Capture stepper must be home for very low cart)
-    enforceCartSafetyRotation(targetCartPos);   // Then this (Gripper rotation must be safe for low cart)
-}
 
-// Ensure enforceCartSafetyRotation and enforceCaptureHomedForLowCart are defined BEFORE this one
-// or add forward declarations if you place it earlier in the file.
 
 void enforceCartSafetyRotation(long targetCartPos) {
-  if (targetCartPos < CART_SAFETY_THRESHOLD) { // Use the global config values
+  if (targetCartPos < CART_SAFETY_THRESHOLD) { 
     if (servoRotation.read() != GRIPPER_ROT_BOARD) {
       Serial.println("SAFETY: Cart target low, forcing gripper to board angle.");
       servoRotation.write(GRIPPER_ROT_BOARD);
-      delay(500); // Blocking for safety is acceptable here
+      delay(500); 
     }
   }
 }
 
 void enforceCaptureHomedForLowCart(long targetCartPos) {
     const unsigned long SAFETY_HOMING_TIMEOUT_MS = 15000;
-    // const unsigned long WS_POLL_INTERVAL_MS = 100; // Not used here
 
-  if (targetCartPos < CART_CAPTURE_HOME_THRESHOLD) { // Use global config
-    // Also check the homed flag, because setCurrentPosition(0) might have been used
-    // without a physical homing process if 'sethome' was used.
-    // However, for this safety check, we usually want to ensure it *is* at the physical endstop.
-    // For calibration, relying on currentPosition() might be okay if sethome is used carefully.
-    // Let's stick to currentPosition() for now to align with sethome.
+  if (targetCartPos < CART_CAPTURE_HOME_THRESHOLD) { 
     if (stepperCapture.currentPosition() != 0) {
       Serial.println("SAFETY: Cart target very low, forcing Capture home.");
-      float o_sp = stepperCapture.maxSpeed(); float o_ac = stepperCapture.acceleration();
-      stepperCapture.setMaxSpeed(abs(HOMING_SPEED_CAPTURE)); // Use config
-      stepperCapture.setAcceleration(HOMING_ACCEL);    // Use config
-      stepperCapture.enableOutputs(); stepperCapture.move(-30000);
-      unsigned long startT = millis(); bool SChomed = false;
+
+      float o_sp = stepperCapture.maxSpeed(); 
+      float o_ac = stepperCapture.acceleration();
+    
+      stepperCapture.setMaxSpeed(abs(HOMING_SPEED_CAPTURE));
+      stepperCapture.setAcceleration(HOMING_ACCEL);    
+      stepperCapture.enableOutputs(); 
+      stepperCapture.move(-30000);
+      
+      unsigned long startT = millis(); 
+      bool SChomed = false;
+
       while (!SChomed && (millis() - startT < SAFETY_HOMING_TIMEOUT_MS)) {
         if (digitalRead(ENDSTOP_CAPTURE_PIN) == LOW) {
           stepperCapture.stop(); stepperCapture.setCurrentPosition(0); SChomed = true;
@@ -324,8 +317,11 @@ void enforceCaptureHomedForLowCart(long targetCartPos) {
     }
   }
 }
+void enforceAllSafetyForCart(long targetCartPos) {
+    enforceCaptureHomedForLowCart(targetCartPos); // Check this first (Capture stepper must be home for very low cart)
+    enforceCartSafetyRotation(targetCartPos);   // Then this (Gripper rotation must be safe for low cart)
+}
 // ========================== HOMING =======================================
-// (handleHoming and startHomingAll remain largely the same, ensure speeds are from _CONFIG)
 unsigned long homingTimeoutStart;
 const unsigned long HOMING_TIMEOUT_DURATION = 20000;
 
@@ -335,18 +331,19 @@ void startHomingAll() {
     homingInProgress_flag = true; captureHomed_flag = false; cartHomed_flag = false; orbHomed_flag = false;
 
     Serial.println("  Homing Capture stepper...");
-    stepperCapture.setMaxSpeed(HOMING_SPEED_CAPTURE); // Use config value
-    stepperCapture.setAcceleration(HOMING_ACCEL);    // Use config value
+    stepperCapture.setMaxSpeed(HOMING_SPEED_CAPTURE); 
+    stepperCapture.setAcceleration(HOMING_ACCEL);    
     stepperCapture.enableOutputs(); stepperCapture.move(-30000);
     homingTimeoutStart = millis();
 }
 
 void handleHoming() {
     if (!homingInProgress_flag) return;
-    if (!captureHomed_flag) { /* ... same logic as before, use _CONFIG speeds ... */
+    if (!captureHomed_flag) {
         stepperCapture.run();
         if (digitalRead(ENDSTOP_CAPTURE_PIN) == LOW) {
-            stepperCapture.stop(); stepperCapture.setCurrentPosition(0); captureHomed_flag = true;
+            stepperCapture.stop(); stepperCapture.setCurrentPosition(0); 
+            captureHomed_flag = true;
             Serial.println("  Capture stepper homed at 0.");
             stepperCapture.setMaxSpeed(STEPPER_SPEED); stepperCapture.setAcceleration(STEPPER_ACCEL);
             Serial.println("  Homing Cart and Orb steppers...");
@@ -358,7 +355,7 @@ void handleHoming() {
         } else if (millis() - homingTimeoutStart > HOMING_TIMEOUT_DURATION) { /* timeout */ 
             Serial.println("ERR: Capture homing timeout!"); stepperCapture.stop(); homingInProgress_flag = false;
         }
-    } else if (!cartHomed_flag || !orbHomed_flag) { /* ... same logic for cart/orb ... */
+    } else if (!cartHomed_flag || !orbHomed_flag) {
         if (!cartHomed_flag) {
             stepperCart.run();
             if (digitalRead(ENDSTOP_CART_PIN) == LOW) {
@@ -405,7 +402,7 @@ void setStepperHome(String stepperId) {
 
 // ========================== JOGGING ======================================
 void startJog(String actuatorId, bool positive) {
-    stopJog(); // Stop any previous jog
+    stopJog(); 
     actuatorId.toLowerCase();
     Serial.print("ACK: Jog Start - "); Serial.print(actuatorId); Serial.println(positive ? " POS" : " NEG");
 
@@ -424,12 +421,7 @@ void startJog(String actuatorId, bool positive) {
         stepperCapture.enableOutputs();
         stepperCapture.setSpeed(positive ? MANUAL_JOG_CAPTURE_SPEED : -MANUAL_JOG_CAPTURE_SPEED);
     }
-    // Servo and LA jog are not continuous from ESP side based on current python app design
-    // Python app will send discrete servorot/servogrip/la_ext/la_ret commands if jogged.
-    // If you want ESP-side continuous servo/LA jog:
-    // else if (actuatorId.equals("rotservo")) { currentJogActuator = JOG_ACT_ROT_SERVO; jogDirectionPositive = positive; }
-    // else if (actuatorId.equals("gripservo")) { currentJogActuator = JOG_ACT_GRIP_SERVO; jogDirectionPositive = positive; }
-    // else if (actuatorId.equals("linact")) { currentJogActuator = JOG_ACT_LIN_ACT; if (positive) commandExtendActuator(false); else commandRetractActuator(false, false); }
+    
     else {
         Serial.println("ERR: Unknown actuator for jog: " + actuatorId);
     }
@@ -445,7 +437,6 @@ void stopJog() {
             default: break;
         }
         currentJoggingStepper = JOG_ACT_NONE;
-        // For safety, could run steppers for a short duration to decelerate
         unsigned long stopStartTime = millis();
         while(millis() - stopStartTime < 100){ // Run for 100ms to allow deceleration
             stepperCart.run(); stepperOrb.run(); stepperCapture.run();
@@ -470,27 +461,24 @@ void commandRetractActuator(bool timed, bool useSensor) {
     digitalWrite(ACTUATOR_IN1_PIN, HIGH);
     digitalWrite(ACTUATOR_IN2_PIN, LOW);
     if (timed) {
-        unsigned long rStart = millis();
+        delay(ACTUATOR_TRAVEL_TIME_MS);
         bool sTrig = false;
-        while(millis() - rStart < ACTUATOR_TRAVEL_TIME_MS) {
-            if (useSensor && digitalRead(ACTUATOR_RETRACTED_SENSE_PIN) == HIGH) { // Active HIGH
-                sTrig = true;
-                break;
-            }
-            delay(10);
+        if (useSensor && digitalRead(ACTUATOR_RETRACTED_SENSE_PIN) == HIGH) { // Active HIGH
+            sTrig = true;
         }
+
         commandStopActuator();
         if(useSensor) Serial.println(sTrig ? "  Retract (sensor) complete." : "WARN: Timed retract, sensor NOT triggered.");
         else Serial.println("  Retract (timed) complete.");
     }
 }
-void commandStopActuator() { /* ... same ... */
+void commandStopActuator() {
     digitalWrite(ACTUATOR_IN1_PIN, LOW); digitalWrite(ACTUATOR_IN2_PIN, LOW);
-    // Serial.println("CMD: Stop Actuator"); // Can be noisy if called often
+
 }
 // ========================== HIGH-LEVEL SEQUENCES =========================
-// Blocking versions for calibration sketch simplicity
-void executeTakeSequence() { /* ... same as before ... */
+
+void executeTakeSequence() { 
     Serial.println("ACK: Executing Take Sequence...");
     servoGripper.write(GRIPPER_OPEN_ANGLE); delay(300);
     commandExtendActuator(true);
@@ -498,15 +486,15 @@ void executeTakeSequence() { /* ... same as before ... */
     commandRetractActuator(true, true); // Use sensor for take
     Serial.println("  Take Sequence Complete.");
 }
-void executeReleaseSequence() { /* ... same as before ... */
+void executeReleaseSequence() {
     Serial.println("ACK: Executing Release Sequence...");
     commandExtendActuator(true);
     servoGripper.write(GRIPPER_OPEN_ANGLE); delay(300);
-    commandRetractActuator(true, false); // Timed is fine for release
+    commandRetractActuator(true, false); 
     Serial.println("  Release Sequence Complete.");
 }
 
-void waitForSteppersBlocking(const String& moveName) { /* ... same as before ... */
+void waitForSteppersBlocking(const String& moveName) { 
     Serial.print("  Waiting for '"); Serial.print(moveName); Serial.println("' steppers (blocking)...");
     unsigned long moveStartTime = millis();
     bool cartMoving = stepperCart.distanceToGo() != 0;
@@ -547,7 +535,7 @@ void executeDoSequence(String fromStr, String toStr) {
         waitForSteppersBlocking("Board Source");
     } 
     // Capture Zone logic: Move cart/orb, THEN rotate, THEN move capture stepper
-    else { // LOC_CALIB_CAPTURE
+    else { 
         if (servoRotation.read() != GRIPPER_ROT_BOARD) { servoRotation.write(GRIPPER_ROT_BOARD); delay(400); }
         stepperCart.moveTo(c1); stepperOrb.moveTo(o1); waitForSteppersBlocking("Cart/Orb to CZ Align (Source)");
         stepperCapture.moveTo(p1); waitForSteppersBlocking("Capture to Slot (Source)");
@@ -556,12 +544,12 @@ void executeDoSequence(String fromStr, String toStr) {
 
     // --- Perform Take ---
     Serial.println("  2. Performing Take...");
-    executeTakeSequence(); // This is blocking
+    executeTakeSequence(); 
 
     // --- Move to Destination ---
     Serial.println("  3. Moving to Dest: " + toStr);
     enforceAllSafetyForCart(c2);
-    // Board logic: Rotate first if needed, then move all steppers
+    // Rotate first if needed, then move all steppers
     if (t2 == LOC_CALIB_BOARD) {
         if (servoRotation.read() != r2) { servoRotation.write(r2); delay(400); }
         stepperCart.moveTo(c2); stepperOrb.moveTo(o2); stepperCapture.moveTo(p2);
@@ -582,9 +570,6 @@ void executeDoSequence(String fromStr, String toStr) {
     Serial.println("  Do Sequence Complete.");
 }
 // ========================== CALIBRATION PARSERS ==========================
-// (getTargetsForSquareInternal, getTargetForCaptureInternal, parseLocationCalib - these are your
-// current getTargetsForSquare, getTargetForCapture, parseLocation, but renamed to avoid
-// potential conflicts if you were to include other libraries. They use fixed values from this sketch)
 
 bool getTargetsForSquareInternal(String square, long &orbTarget, long &cartTarget) {
   square.trim(); square.toLowerCase();
