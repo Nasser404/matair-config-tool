@@ -1,7 +1,7 @@
-# --- START OF FILE esp32_config_tool/utils/config_parser.py ---
+
 import re
 
-# DEFAULT_CONFIG_VALUES dictionary remains the same
+# DEFAULT_CONFIG_VALUES
 DEFAULT_CONFIG_VALUES = {
     "DEFAULT_SSID": "", "DEFAULT_PWD": "", "DEFAULT_HOST": "127.0.0.1", "DEFAULT_PORT": 29920,
     "orbTargets": [4000, 3180, 2420, 1630, 840, 20, 5650, 4820],
@@ -28,7 +28,7 @@ def load_config_values(filepath):
     Loads configuration from a .h file. Starts with defaults and overwrites with
     any values found in the file. Returns a complete dictionary.
     """
-    # Start with a fresh copy of defaults. This will be updated.
+
     loaded_cfg = DEFAULT_CONFIG_VALUES.copy()
     try:
         with open(filepath, 'r') as f:
@@ -38,7 +38,7 @@ def load_config_values(filepath):
         print(f"Warning: Could not read '{filepath}': {e}. Using all default values.")
         return loaded_cfg
 
-    # --- SIMPLIFIED AND CORRECTED PARSING LOGIC ---
+   
     for key, default_value in DEFAULT_CONFIG_VALUES.items():
         # Build a specific regex pattern for each key
         
@@ -92,10 +92,8 @@ def load_config_values(filepath):
     print(f"Config values parsed from {filepath}")
     return loaded_cfg
 
-# `generate_config_h_string` from the previous response is still correct and robust.
-# It uses .get() with defaults, which is safe.
+
 def generate_config_h_string(config_data):
-    # ... (function body from previous response) ...
     def format_array(data_list):
         lines = []
         for i in range(0, len(data_list), 8):

@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from utils.config_parser import DEFAULT_CONFIG_VALUES
 
 class NetworkTabWidget(QWidget):
-    def __init__(self, config_values_ref, parent=None): # No serial_handler needed for config updates
+    def __init__(self, config_values_ref, parent=None): 
         super().__init__(parent)
         self.config_values = config_values_ref
 
@@ -17,7 +17,7 @@ class NetworkTabWidget(QWidget):
         network_config_group.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
         config_layout = QGridLayout(network_config_group)
 
-        self.config_fields = {} # To store QLineEdit widgets
+        self.config_fields = {} 
 
         row = 0
         row = self.add_network_config_row(config_layout, "Default WiFi SSID:", "DEFAULT_SSID", row)
@@ -75,11 +75,7 @@ class NetworkTabWidget(QWidget):
             # Port needs to be int
             self.config_values["DEFAULT_PORT"] = int(self.config_fields["DEFAULT_PORT"].text())
             
-            # NOTE: We DO NOT send these with `setconfig`. These are default values used
-            # by the main operational firmware when it can't load credentials from Preferences/Flash.
-            # The calibration firmware connects using credentials already on the ESP32.
-            # This button's purpose is to update the values for the *next time you generate config.h*.
-
+          
             QMessageBox.information(self, "Success", "Network configuration parameters updated in app memory.\nThese values will be used when you generate the config.h file.")
 
         except ValueError:

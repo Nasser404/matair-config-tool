@@ -93,7 +93,7 @@ class ActuatorTabWidget(QWidget):
             self.status_update_timer.timeout.connect(self.request_all_statuses)
             self.serial_handler.connection_status_changed.connect(self.handle_connection_change_for_timer)
 
-    def load_fields_from_config(self): # Renamed for consistency
+    def load_fields_from_config(self):
         print("ActuatorTab: Loading fields from config.")
         self.travel_time_input.setText(str(self.config_values.get("ACTUATOR_TRAVEL_TIME_MS", 650)))
 
@@ -113,7 +113,7 @@ class ActuatorTabWidget(QWidget):
         self.load_fields_from_config() # Refresh display to show stored value
 
     def start_jog(self, is_extending):
-        command = "la_ext" if is_extending else "la_ret_nosensor" # Use a new command for non-sensor retract jog
+        command = "la_ext" if is_extending else "la_ret_nosensor" 
         self.serial_handler.send_command(command)
         
     def stop_jog(self):
@@ -121,7 +121,7 @@ class ActuatorTabWidget(QWidget):
 
     def request_all_statuses(self):
         if self.serial_handler.is_connected():
-            self.serial_handler.send_command("getallpos") # <<< UNCOMMENTED THIS
+            self.serial_handler.send_command("getallpos") 
 
     def handle_connection_change_for_timer(self, connected, port_name):
         if connected:
@@ -138,7 +138,7 @@ class ActuatorTabWidget(QWidget):
                 json_data = json.loads(line[4:])
                 if "actuatorSensor" in json_data:
                     sensor_state = json_data["actuatorSensor"]
-                    if sensor_state == 1: # Active HIGH
+                    if sensor_state == 1: 
                         self.retracted_sensor_display.setText("RETRACTED")
                         self.retracted_sensor_display.setStyleSheet("color: green; font-weight: bold;")
                     else:
@@ -148,4 +148,4 @@ class ActuatorTabWidget(QWidget):
                 print(f"ActuatorTab: Error decoding POS JSON: {line}")
         elif line.startswith("ACK:"):
             if "Actuator" in line:
-                self.request_all_statuses() # Refresh sensor status after any actuator action
+                self.request_all_statuses() 

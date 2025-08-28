@@ -21,8 +21,7 @@ class SerialHandler(QObject):
         self.parent_window = parent_window
         self.is_disconnecting = False # Flag to prevent race conditions on disconnect
 
-        # A Mutex is crucial for thread safety if communication gets very fast or complex
-        # For now, it's good practice to protect the serial write operation.
+
         self.write_mutex = QMutex()
 
         # Timer for periodically reading serial data

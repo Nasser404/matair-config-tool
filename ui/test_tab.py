@@ -1,4 +1,4 @@
-# --- START OF FILE esp32_config_tool/ui/test_tab.py ---
+
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                              QPushButton, QGroupBox, QMessageBox, QFormLayout, QGridLayout,
                              QFrame, QSizePolicy, QScrollArea)
@@ -26,9 +26,9 @@ class TestTabWidget(QWidget):
         
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
-        # Create a container widget for the actual content
+    
         main_widget_for_scroll = QWidget()
-        main_layout = QHBoxLayout(main_widget_for_scroll) # This is your original main layout
+        main_layout = QHBoxLayout(main_widget_for_scroll) 
         
         scroll_area.setWidget(main_widget_for_scroll)
         tab_overall_layout.addWidget(scroll_area)
@@ -61,7 +61,7 @@ class TestTabWidget(QWidget):
         capture_layout.addWidget(self.circular_capture_widget)
         selection_area.addWidget(capture_group)
         
-        main_layout.addLayout(selection_area, 2) # Give more space to grids
+        main_layout.addLayout(selection_area, 2) 
 
         # --- Right Side: Control Box ---
         control_box = QGroupBox("Move Execution")
@@ -106,15 +106,12 @@ class TestTabWidget(QWidget):
         if isinstance(sender, ChessSquareButton):
             location_str = sender.text().lower()
         elif isinstance(sender, CircularCaptureWidget):
-            # The signal from CircularCaptureWidget is an int, but we need the text
-            # This requires a small change to its signal or how we handle it.
-            # Let's assume on_location_selected is now connected to the slot_clicked(int) signal
+         
             if isinstance(self.sender(), CircularCaptureWidget):
-                 # This slot will receive an integer
-                 slot_num = self.sender().selected_slot # Use the selected_slot attribute
-                 location_str = f"capt{slot_num}"
-                 # Update the visual selection in the widget
-                 self.circular_capture_widget.update_selected_slot_display(slot_num)
+                slot_num = self.sender().selected_slot 
+                location_str = f"capt{slot_num}"
+                # Update the visual selection in the widget
+                self.circular_capture_widget.update_selected_slot_display(slot_num)
 
         if not location_str:
             return
@@ -160,7 +157,7 @@ class TestTabWidget(QWidget):
             QMessageBox.warning(self, "Serial Error", "Not connected to ESP32.")
 
     def parse_esp32_response(self, line):
-        # Could provide feedback here, e.g., "Do Sequence Complete" ACK
+      
         if "Do Sequence Complete" in line:
             QMessageBox.information(self, "ESP32 Feedback", "The 'do' sequence has completed successfully.")
         elif line.startswith("ERR:") and "do" in line.lower():
