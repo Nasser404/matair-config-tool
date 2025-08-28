@@ -146,7 +146,7 @@ class BoardTabWidget(QWidget):
         self.current_selected_x = -1 # File index (0-7 for A-H)
         self.current_selected_y = -1 # Rank index from top (0 for '8', 7 for '1')
         
-        self.update_board_info_box() # Initial state setup
+        self.update_board_info_box() 
 
         if self.serial_handler:
             self.serial_handler.data_received.connect(self.parse_esp32_response)
@@ -163,7 +163,7 @@ class BoardTabWidget(QWidget):
             self.get_esp_target_for_square()
 
     def update_board_info_box(self):
-        # This method now controls visibility and populates values
+  
         orb_targets = self.config_values.get("orbTargets", [0]*8)
         cart_targets = self.config_values.get("cartTargets", [0]*8)
 
@@ -183,7 +183,7 @@ class BoardTabWidget(QWidget):
 
         self.orb_group.setVisible(is_file_sel or is_square_sel)
         self.cart_group.setVisible(is_rank_sel or is_square_sel)
-        #self.go_to_square_button.setEnabled(is_square_sel) # Only enable for full squares
+        #self.go_to_square_button.setEnabled(is_square_sel) 
 
         if is_file_sel:
             self.orb_group.setTitle(f"Orb ({self.current_selected_square_text}) Control")
@@ -204,7 +204,7 @@ class BoardTabWidget(QWidget):
         if not self.current_selected_square_text: return
         try:
             # Update all values present in the info box
-            # This simplifies logic: if an input is visible and has a value, update it.
+     
             if self.orb_group.isVisible():
                 orb_val = int(self.selected_square_info_orb_val.text())
                 if self.current_selected_x != -1: # Works for file labels and squares
@@ -212,7 +212,7 @@ class BoardTabWidget(QWidget):
             
             if self.cart_group.isVisible():
                 cart_val = int(self.selected_square_info_cart_val.text())
-                if self.current_selected_y != -1: # Works for rank labels and squares
+                if self.current_selected_y != -1: 
                     rank_idx = 7 - self.current_selected_y
                     self.config_values["cartTargets"][rank_idx] = cart_val
                     
@@ -248,8 +248,8 @@ class BoardTabWidget(QWidget):
         if self.selected_square_info_cart_val.isVisible() and cart_val_str:
             try:
                 cart_pos = int(cart_val_str)
-                # For cart, we should also send safety commands if applicable
-                # This is tricky as safety depends on target. The ESP "gotocart" should handle it.
+        
+   
                 self.serial_handler.send_command(f"gotocart {cart_pos}")
                 commands_sent += 1
             except ValueError:
@@ -265,25 +265,23 @@ class BoardTabWidget(QWidget):
 
     def parse_esp32_response(self, line):
         return
-        # This method will be connected to serial_handler.data_received signal
-        #print(f"BoardTab received: {line}") # For debugging
+        #print(f"BoardTab received: {line}") 
         if line.startswith("SQPOS:"):
             try:
                 json_data = json.loads(line[6:])
-                square = json_data.get("square", "??").upper() # ESP sends lowercase
+                square = json_data.get("square", "??").upper() 
                 orb_val = json_data.get("orb", "N/A")
                 cart_val = json_data.get("cart", "N/A")
 
-                # Only update if the currently selected square matches the response
+             
                 if self.current_selected_square_text == square and not self.current_selected_is_label:
                     self.selected_square_info_orb_val.setText(str(orb_val))
                     self.selected_square_info_cart_val.setText(str(cart_val))
                     print(f"Updated info box for {square} from ESP32 response.")
             except json.JSONDecodeError:
                 print(f"BoardTab: Error decoding SQPOS JSON: {line}")
-        # Add parsing for other relevant messages if needed by this tab
+   
         
 def load_fields_from_config(self):
     print("BoardTab: Reloading fields from config.")
-    # Re-trigger info box update based on current selection
     self.update_board_info_box()

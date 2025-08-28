@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QTabWidget,
                              QMessageBox, QFileDialog, QPushButton, QHBoxLayout)
-from PyQt5.QtCore import QTimer, pyqtSignal # Added pyqtSignal
+from PyQt5.QtCore import QTimer, pyqtSignal 
 
 # Import custom modules
 from ui.board_tab import BoardTabWidget
@@ -20,13 +20,13 @@ from utils.serial_handler import SerialHandler
 CONFIG_VALUES = {}
 
 class MainWindow(QMainWindow):
-    # Signal to notify all child widgets that the main config has been updated (e.g., from a file load)
+
     config_updated_signal = pyqtSignal()
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Mat@ir Configuration Tool")
-        self.setGeometry(100, 100, 1000, 750) # Slightly larger for better spacing
+        self.setGeometry(100, 100, 1000, 750) 
 
         # --- Initialize Global Config with Defaults ---
         global CONFIG_VALUES
@@ -90,7 +90,6 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.bottom_toolbox_widget)
 
         # --- Connect the config update signal to each tab's refresh method ---
-        # This is the clean way to tell all tabs to update themselves.
         self.config_updated_signal.connect(self.board_tab_widget.update_board_info_box)
         self.config_updated_signal.connect(self.capture_tab_widget.load_fields_from_config)
         self.config_updated_signal.connect(self.servo_tab_widget.load_fields_from_config)
@@ -103,11 +102,10 @@ class MainWindow(QMainWindow):
         global CONFIG_VALUES
         print(f"Attempting to load config from: {file_path}")
         
-        # load_config_values always returns a full dictionary (either from file or default)
+       
         loaded_dict = load_config_values(file_path)
 
-        # Check if the load was successful by seeing if it's different from the default dict
-        # This is a simple heuristic. A better way might be for the parser to return a success flag.
+
         load_was_successful = (id(loaded_dict) != id(DEFAULT_CONFIG_VALUES))
 
         # Update the global dictionary in-place to preserve references

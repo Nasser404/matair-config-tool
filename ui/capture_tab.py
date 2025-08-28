@@ -5,7 +5,6 @@ from PyQt5.QtCore import Qt, QRectF, pyqtSignal
 import math
 import json
 
-# CircularCaptureWidget class remains the same as before
 class CircularCaptureWidget(QWidget):
     slot_clicked = pyqtSignal(int)
     def __init__(self, parent=None):
@@ -18,7 +17,7 @@ class CircularCaptureWidget(QWidget):
         self.setMouseTracking(True)
 
     def paintEvent(self, event):
-        # ... (no changes needed in paintEvent)
+
         painter = QPainter(self); painter.setRenderHint(QPainter.Antialiasing)
         rect = self.rect(); side = min(rect.width(), rect.height()); padding = 10
         diameter = side - 2 * padding
@@ -42,18 +41,18 @@ class CircularCaptureWidget(QWidget):
             painter.drawText(text_rect, Qt.AlignCenter, str(slot_number))
         painter.setBrush(Qt.NoBrush); painter.setPen(QPen(Qt.black, 2)); painter.drawEllipse(ellipse_rect)
 
-    def mousePressEvent(self, event): # ... (no change)
+    def mousePressEvent(self, event): 
         slot = self._get_slot_at_pos(event.pos())
         if slot != -1: self.selected_slot = slot; self.slot_clicked.emit(slot); self.update()
 
-    def mouseMoveEvent(self, event): # ... (no change)
+    def mouseMoveEvent(self, event): 
         slot = self._get_slot_at_pos(event.pos())
         if slot != self.hovered_slot: self.hovered_slot = slot; self.update()
 
-    def leaveEvent(self, event): # ... (no change)
+    def leaveEvent(self, event):
         self.hovered_slot = -1; self.update()
 
-    def _get_slot_at_pos(self, pos): # ... (no change)
+    def _get_slot_at_pos(self, pos): 
         rect = self.rect(); side = min(rect.width(), rect.height()); padding = 10; diameter = side - 2 * padding
         if diameter <= 0: return -1
         center_x = rect.width()/2; center_y = rect.height()/2; radius = diameter / 2
@@ -64,7 +63,7 @@ class CircularCaptureWidget(QWidget):
         if angle_deg < 0: angle_deg += 360
         return math.floor(angle_deg / (360.0 / self.num_slots)) + 1
 
-    def update_selected_slot_display(self, slot_number): # ... (no change)
+    def update_selected_slot_display(self, slot_number):
         self.selected_slot = slot_number; self.update()
 
 
@@ -213,7 +212,7 @@ class CaptureTabWidget(QWidget):
         if self.current_selected_slot_number == -1:
             QMessageBox.warning(self, "Go To Error", "No capture slot selected.")
             return
-        # Send a sequence of commands for the full action
+
         self.go_to_configured_dropoff(move_capture_stepper=True)
 
     def move_esp_to_displayed_capture_value(self):
@@ -222,18 +221,17 @@ class CaptureTabWidget(QWidget):
             return
         capt_val_str = self.slot_pos_val.text()
         if capt_val_str.isdigit():
-            # This just moves the capture stepper
+
             self.serial_handler.send_command(f"gotocapt {capt_val_str}")
         else:
             QMessageBox.warning(self, "Input Error", "Capture position value is not a valid number.")
 
     def get_esp_target_for_slot(self):
-        # This command is less useful if config is local, but can be for verification
         if self.current_selected_slot_number != -1:
             self.serial_handler.send_command(f"getcaptpos {self.current_selected_slot_number}")
             
     def go_to_configured_dropoff(self, move_capture_stepper=False):
-        # Use values directly from input fields for immediate testing
+
         try:
             cart_pos = int(self.cart_capture_pos_val.text())
             rot_angle = int(self.gripper_rot_capture_val.text())
@@ -252,9 +250,6 @@ class CaptureTabWidget(QWidget):
                 QMessageBox.warning(self, "Go To Error", "Slot position input is invalid.")
                 return # Stop sequence if slot pos is bad
         
-        # We might need to wait for steppers to finish before rotating.
-        # For calibration, sending commands sequentially is often okay.
-        # A more robust system would wait for ACK from steppers before sending servo command.
         self.serial_handler.send_command(f"servorot {rot_angle}")
 
     def parse_esp32_response(self, line):

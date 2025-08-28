@@ -147,7 +147,7 @@ class StepperTabWidget(QWidget):
             if self.serial_handler.is_connected():
                 self.handle_connection_change_for_timer(True, "") # Manually trigger once if already connected
 
-    # --- THIS IS NOW A METHOD OF THE CLASS ---
+
     def add_config_row(self, layout, label_text, config_key, row_idx):
         default_value = self.config_values.get(config_key, 0)
         label = QLabel(label_text)

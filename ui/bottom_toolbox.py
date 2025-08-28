@@ -10,7 +10,7 @@ class BottomToolbox(QFrame):
         self.show_config_callback = show_config_callback
 
         self.setFrameShape(QFrame.StyledPanel)
-        self.setFixedHeight(90) # Increased height slightly for groupbox
+        self.setFixedHeight(90) 
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(5, 5, 5, 5)
 
@@ -100,8 +100,6 @@ class BottomToolbox(QFrame):
         """
         try:
             cart_pos = int(self.config_values.get("CART_CAPTURE_POS", 2250))
-            # The only command we need to send is to move the cart.
-            # The ESP32's internal safety checks will handle the rest.
             print(f"Sending command to move cart to CZ Dropoff position: {cart_pos}")
             self.serial_handler.send_command(f"gotocart {cart_pos}")
         except ValueError:

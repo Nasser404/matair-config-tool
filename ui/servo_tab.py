@@ -5,9 +5,9 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QTimer
 import json
 
-# ServoControlWidget remains the same as the previous correct version.
+
 class ServoControlWidget(QGroupBox):
-    # ... (No changes needed inside this class from the last version) ...
+
     def __init__(self, title, servo_id_str, serial_handler_ref, config_values_ref, parent_tab_widget=None):
         super().__init__(title, parent_tab_widget)
         self.servo_id_str = servo_id_str
@@ -157,9 +157,7 @@ class ServoTabWidget(QWidget):
             self.angle_update_timer.timeout.connect(self.request_all_positions_from_tab)
             self.serial_handler.connection_status_changed.connect(self.handle_connection_change_for_timer)
 
-    # ... (send_configured_preset_angle, load_fields_from_config, update_all_servo_configs,
-    #      handle_connection_change_for_timer, request_all_positions_from_tab, parse_esp32_response
-    #      can remain exactly the same as the previous correct version) ...
+
     def send_configured_preset_angle(self, config_key, command_prefix):
         try:
             angle_str = self.config_fields[config_key].text()
