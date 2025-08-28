@@ -1,5 +1,13 @@
 # ESP32 Chess Robot Configuration Tool
 
+A comprehensive Python/PyQt5 application for calibrating the "Mat@ir" Spherical Chess Robot. This tool provides a graphical user interface to fine-tune all mechanical movements and generate a ready-to-use configuration header (`config.h`) for the main robot firmware.
+
+<a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python Version"></a>
+<a href="https://pypi.org/project/PyQt5/"><img src="https://img.shields.io/badge/UI-PyQt5-green?logo=qt" alt="PyQt5"></a>
+<a href="https://pypi.org/project/pyserial/"><img src="https://img.shields.io/badge/Communication-PySerial-lightgrey" alt="PySerial"></a>
+<a href="https://www.arduino.cc/"><img src="https://img.shields.io/badge/Firmware-Arduino/C%2B%2B-00979D?logo=arduino" alt="Arduino"></a>
+
+
 This repository contains the software for calibrating and configuring the "Mat@ir" Spherical Chess Robot. It consists of two main parts:
 
 1.  **Calibration Firmware (`calibration_firmware.ino`):** A dedicated Arduino sketch for the ESP32 that provides a serial command interface to control all actuators.
@@ -35,6 +43,7 @@ This repository contains the software for calibrating and configuring the "Mat@i
 1.  **Select Port:** Choose your ESP32's COM port from the dropdown menu at the top of the application. If you don't see it, click "Refresh".
 2.  **Connect:** Click the "Connect" button. The status label should turn green and display "Connected".
 
+![Screenshot showing the connection process](/screenshots/connect.png)
 ### Step 4: Calibrate Your Robot
 
 The application is organized into tabs for different parts of the robot.
@@ -48,6 +57,8 @@ The toolbox at the bottom of the window is always visible and provides quick acc
 *   **Test Take/Release:** Run the complete, blocking "take" or "release" sequences to test the gripper and actuator timing.
 *   **Go to CZ Dropoff:** A shortcut to move the Cart and Gripper to the position for interacting with the capture zone.
 
+![Screenshot of toolbox](/screenshots/toolbox.png)
+
 #### Board & Capture Zone Tabs
 
 These tabs are for finding the exact stepper motor positions for each square and capture slot.
@@ -58,6 +69,7 @@ These tabs are for finding the exact stepper motor positions for each square and
 4.  **Update in App:** Once you are happy with the position, click **"Update Position in App"**. This saves the new value *in the application's memory*.
 5.  Repeat for all necessary squares and capture slots.
 
+![Screenshot of board tab](/screenshots/moveBoard.png)
 
 #### Stepper, Servo, & Actuator Tabs
 
@@ -79,4 +91,6 @@ Once you have finished calibrating all the positions and parameters, you are rea
 1.  In the bottom toolbox, click the **"Generate/Show Config.h"** button.
 2.  A new window will appear showing the complete, formatted `config.h` content with all of your new values.
 3.  **Copy to Clipboard:** Click this to copy the content. You can then paste it directly into your `config.h` file in your main project's source code.
+![Screenshot of copy window](/screenshots/copyh.png)
 
+![Screenshot of config.h file to replace](/screenshots/configh.png)
