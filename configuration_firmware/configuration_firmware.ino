@@ -66,8 +66,8 @@ void setup() {
     pinMode(ACTUATOR_IN2_PIN, OUTPUT);
     pinMode(ACTUATOR_RETRACTED_SENSE_PIN, INPUT);
 
-    servoRotation.attach(ROTATION_SERVO_PIN);
-    servoGripper.attach(GRIPPER_SERVO_PIN);
+    servoRotation.attach(ROTATION_SERVO_PIN, 500, 2500);
+    servoGripper.attach(GRIPPER_SERVO_PIN,500, 2500);
 
     stepperCapture.setMaxSpeed(STEPPER_SPEED);
     stepperCapture.setAcceleration(STEPPER_ACCEL);
