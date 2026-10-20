@@ -1,5 +1,18 @@
 # ESP32 Chess Robot Configuration Tool
 
+> [!WARNING]
+> **This tool is no longer maintained.** Since firmware 2.0 of
+> [matair-esp32](https://github.com/Nasser404/matair-esp32), the robot is calibrated live from
+> its built-in web dashboard (Calibrate tab): no separate calibration firmware, no `config.h`
+> edit and no reflash. Values are saved on the ESP32 and can be backed up as JSON.
+>
+> - The dashboard's FILES → EXPORT CONFIG.H still writes `config.h` in the format this tool
+>   produced.
+> - Flashing this tool's calibration firmware onto a robot that runs firmware 2.0 replaces it:
+>   flash matair-esp32 over USB again afterwards.
+>
+> This repository is kept read-only for reference.
+
 A comprehensive Python/PyQt5 application for calibrating the "Mat@ir" Spherical Chess Robot. This tool provides a graphical user interface to fine-tune all mechanical movements and generate a ready-to-use configuration header (`config.h`) for the main robot firmware.
 
 <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python Version"></a>
@@ -10,7 +23,7 @@ A comprehensive Python/PyQt5 application for calibrating the "Mat@ir" Spherical 
 
 This repository contains the software for calibrating and configuring the "Mat@ir" Spherical Chess Robot. It consists of two main parts:
 
-1.  **Calibration Firmware (`calibration_firmware.ino`):** A dedicated Arduino sketch for the ESP32 that provides a serial command interface to control all actuators.
+1.  **Calibration Firmware (`configuration_firmware.ino`):** A dedicated Arduino sketch for the ESP32 that provides a serial command interface to control all actuators.
 2.  **Configuration App (Python/PyQt5):** A graphical user interface that communicates with the calibration firmware.
 
 ## How to Use
@@ -18,7 +31,7 @@ This repository contains the software for calibrating and configuring the "Mat@i
 
 ### Step 1: Upload the Calibration Firmware
 
-1.  Open the `calibration_firmware/calibration_firmware.ino` sketch in the Arduino IDE.
+1.  Open the `configuration_firmware/configuration_firmware.ino` sketch in the Arduino IDE.
 2.  Ensure your board (`esp32dev` or similar) and the correct COM port are selected.
 3.  Upload the firmware to your ESP32.
 4.  Once uploaded, you can open the Serial Monitor (Baud Rate: **115200**) to see status messages. The ESP32 is now ready to receive commands.
@@ -29,7 +42,7 @@ This repository contains the software for calibrating and configuring the "Mat@i
     ```bash
     pip install PyQt5 pyserial
     ```
-2.  Navigate to the `esp32_config_tool` directory.
+2.  Open a terminal in the repository's root folder (where `main_app.py` is).
 3.  Run the main application file:
     ```bash
     python main_app.py
